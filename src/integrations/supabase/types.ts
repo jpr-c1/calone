@@ -54,18 +54,24 @@ export type Database = {
       }
       users: {
         Row: {
+          email: string
+          google_id: string
           id: string
           initials: string
           name: string
           role: string
         }
         Insert: {
+          email: string
+          google_id: string
           id?: string
           initials: string
           name: string
           role: string
         }
         Update: {
+          email?: string
+          google_id?: string
           id?: string
           initials?: string
           name?: string

@@ -3,6 +3,8 @@ export interface TeamMember {
   name: string;
   role: string;
   initials: string;
+  email: string;
+  google_id: string;
 }
 
 export interface ContentItem {
