@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ContentItem, TeamMember, CHANNELS } from "@/types/content";
+import { ContentItem, TeamMember, CHANNELS, Campaign } from "@/types/content";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -10,21 +10,24 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit, Trash2, ExternalLink } from "lucide-react";
+import { CalendarIcon, Edit, Trash2, ExternalLink, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface ContentDetailDialogProps {
   content: ContentItem | null;
   open: boolean;
   onClose: () => void;
   users: TeamMember[];
-  onEdit: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
+  campaigns: Campaign[];
+  onEdit: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string }) => void;
   onDelete: (id: string) => void;
+  onAddCampaign: () => void;
 }
 
-export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onDelete }: ContentDetailDialogProps) => {
+export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, onEdit, onDelete, onAddCampaign }: ContentDetailDialogProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
@@ -32,17 +35,53 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
   const [description, setDescription] = useState("");
   const [channel, setChannel] = useState("");
   const [ownerId, setOwnerId] = useState("");
+  const [campaignId, setCampaignId] = useState<string>("");
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [isAddingCampaign, setIsAddingCampaign] = useState(false);
   const [publishDate, setPublishDate] = useState<Date>();
 
   if (!content) return null;
 
   const ownerData = content.owner;
 
+  const handleAddNewCampaign = async () => {
+    if (!newCampaignName.trim()) {
+      toast.error("Please enter a campaign name");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert([{ name: newCampaignName.trim() }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setCampaignId(data.id);
+        setNewCampaignName("");
+        setIsAddingCampaign(false);
+        toast.success("Campaign created successfully!");
+        onAddCampaign();
+      }
+    } catch (error: any) {
+      console.error('Error creating campaign:', error);
+      if (error.code === '23505') {
+        toast.error("A campaign with this name already exists");
+      } else {
+        toast.error("Failed to create campaign");
+      }
+    }
+  };
+
   const handleEditClick = () => {
     setTitle(content.title);
     setDescription(content.description);
     setChannel(content.channel);
     setOwnerId(content.owner_id);
+    setCampaignId(content.campaign_id || "");
     setPublishDate(new Date(content.publish_date));
     setIsEditing(true);
   };
@@ -64,6 +103,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
         channel,
         owner_id: ownerId,
         publish_date: format(publishDate, "yyyy-MM-dd"),
+        campaign_id: campaignId || undefined,
       });
 
       setIsEditing(false);
@@ -153,6 +193,71 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-campaign" className="text-card-foreground">Campaign (Optional)</Label>
+                {!isAddingCampaign ? (
+                  <div className="flex gap-2">
+                    <Select value={campaignId} onValueChange={setCampaignId}>
+                      <SelectTrigger className="flex-1 border-input bg-background">
+                        <SelectValue placeholder="Select campaign" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border z-[100]">
+                        <SelectItem value="">None</SelectItem>
+                        {campaigns.map((campaign) => (
+                          <SelectItem key={campaign.id} value={campaign.id}>
+                            {campaign.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setIsAddingCampaign(true)}
+                      className="flex-shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={newCampaignName}
+                      onChange={(e) => setNewCampaignName(e.target.value)}
+                      placeholder="Enter new campaign name"
+                      className="flex-1 border-input bg-background"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddNewCampaign();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddNewCampaign}
+                      size="sm"
+                      className="flex-shrink-0"
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setIsAddingCampaign(false);
+                        setNewCampaignName("");
+                      }}
+                      className="flex-shrink-0"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -249,6 +354,17 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
                   )}
                 </div>
               </div>
+
+              {content.campaign && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">
+                    Campaign
+                  </label>
+                  <Badge className="bg-accent/50 text-accent-foreground border border-accent/30 hover:bg-accent/60">
+                    {content.campaign.name}
+                  </Badge>
+                </div>
+              )}
 
               {content.doc_url && (
                 <div>

@@ -14,8 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      campaigns: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       content: {
         Row: {
+          campaign_id: string | null
           channel: string
           created_at: string | null
           description: string
@@ -26,6 +45,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          campaign_id?: string | null
           channel: string
           created_at?: string | null
           description: string
@@ -36,6 +56,7 @@ export type Database = {
           title: string
         }
         Update: {
+          campaign_id?: string | null
           channel?: string
           created_at?: string | null
           description?: string
@@ -46,6 +67,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "content_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "content_owner_id_fkey"
             columns: ["owner_id"]

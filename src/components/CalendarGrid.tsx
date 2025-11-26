@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ContentItem, TeamMember } from "@/types/content";
+import { ContentItem, TeamMember, Campaign } from "@/types/content";
 import { ContentCard } from "@/components/ContentCard";
 import { ContentDetailDialog } from "@/components/ContentDetailDialog";
 import { AddContentDialog } from "@/components/AddContentDialog";
@@ -20,13 +20,15 @@ import {
 interface CalendarGridProps {
   contentItems: ContentItem[];
   users: TeamMember[];
-  onEditContent: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
+  campaigns: Campaign[];
+  onEditContent: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string }) => void;
   onDeleteContent: (id: string) => void;
   onRescheduleContent: (id: string, newDate: string) => void;
-  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => void;
+  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string }) => void;
+  onAddCampaign: () => void;
 }
 
-export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteContent, onRescheduleContent, onAddContent }: CalendarGridProps) => {
+export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, onDeleteContent, onRescheduleContent, onAddContent, onAddCampaign }: CalendarGridProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -90,7 +92,7 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
     }
   };
 
-  const handleAddContentSubmit = (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => {
+  const handleAddContentSubmit = (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string }) => {
     onAddContent(content);
     setAddDialogOpen(false);
     setSelectedDate(null);
@@ -178,13 +180,17 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
         users={users}
+        campaigns={campaigns}
         onEdit={onEditContent}
         onDelete={onDeleteContent}
+        onAddCampaign={onAddCampaign}
       />
 
       <AddContentDialog 
         users={users}
+        campaigns={campaigns}
         onAddContent={handleAddContentSubmit}
+        onAddCampaign={onAddCampaign}
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         initialDate={selectedDate}
