@@ -18,9 +18,11 @@ import {
 
 interface CalendarGridProps {
   contentItems: ContentItem[];
+  onEditContent: (id: string, updated: Omit<ContentItem, "id" | "createdAt">) => void;
+  onDeleteContent: (id: string) => void;
 }
 
-export const CalendarGrid = ({ contentItems }: CalendarGridProps) => {
+export const CalendarGrid = ({ contentItems, onEditContent, onDeleteContent }: CalendarGridProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -133,6 +135,8 @@ export const CalendarGrid = ({ contentItems }: CalendarGridProps) => {
         content={selectedContent}
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
+        onEdit={onEditContent}
+        onDelete={onDeleteContent}
       />
     </>
   );

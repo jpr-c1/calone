@@ -22,6 +22,18 @@ const Dashboard = ({ currentUser, onLogout }: DashboardProps) => {
     setContentItems([...contentItems, newContent]);
   };
 
+  const handleEditContent = (id: string, updated: Omit<ContentItem, "id" | "createdAt">) => {
+    setContentItems(contentItems.map(item => 
+      item.id === id 
+        ? { ...item, ...updated }
+        : item
+    ));
+  };
+
+  const handleDeleteContent = (id: string) => {
+    setContentItems(contentItems.filter(item => item.id !== id));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <UserHeader currentUser={currentUser} onLogout={onLogout} />
@@ -35,7 +47,11 @@ const Dashboard = ({ currentUser, onLogout }: DashboardProps) => {
           <AddContentDialog onAddContent={handleAddContent} />
         </div>
 
-        <CalendarGrid contentItems={contentItems} />
+        <CalendarGrid 
+          contentItems={contentItems} 
+          onEditContent={handleEditContent}
+          onDeleteContent={handleDeleteContent}
+        />
       </main>
     </div>
   );
