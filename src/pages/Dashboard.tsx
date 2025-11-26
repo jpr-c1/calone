@@ -37,7 +37,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner_id: item.owner_id,
           owner: Array.isArray(item.owner) ? item.owner[0] : item.owner,
           publish_date: item.publish_date,
-          created_at: item.created_at
+          created_at: item.created_at,
+          doc_url: item.doc_url
         }));
         setContentItems(mappedContent);
       }
@@ -68,7 +69,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner_id: data.owner_id,
           owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
           publish_date: data.publish_date,
-          created_at: data.created_at
+          created_at: data.created_at,
+          doc_url: data.doc_url
         };
         setContentItems([...contentItems, newContent]);
         toast.success('Content added successfully!');
@@ -99,7 +101,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner_id: data.owner_id,
           owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
           publish_date: data.publish_date,
-          created_at: data.created_at
+          created_at: data.created_at,
+          doc_url: data.doc_url
         };
         setContentItems(contentItems.map(item => 
           item.id === id ? updatedContent : item
