@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ContentItem, TEAM_MEMBERS, CHANNELS } from "@/types/content";
+import { ContentItem, TeamMember, CHANNELS } from "@/types/content";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -19,30 +19,31 @@ interface ContentDetailDialogProps {
   content: ContentItem | null;
   open: boolean;
   onClose: () => void;
-  onEdit: (id: string, updated: Omit<ContentItem, "id" | "createdAt">) => void;
+  users: TeamMember[];
+  onEdit: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
   onDelete: (id: string) => void;
 }
 
-export const ContentDetailDialog = ({ content, open, onClose, onEdit, onDelete }: ContentDetailDialogProps) => {
+export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onDelete }: ContentDetailDialogProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [channel, setChannel] = useState("");
-  const [owner, setOwner] = useState("");
+  const [ownerId, setOwnerId] = useState("");
   const [publishDate, setPublishDate] = useState<Date>();
 
   if (!content) return null;
 
-  const ownerData = TEAM_MEMBERS.find(m => m.name === content.owner);
+  const ownerData = content.owner;
 
   const handleEditClick = () => {
     setTitle(content.title);
     setDescription(content.description);
     setChannel(content.channel);
-    setOwner(content.owner);
-    setPublishDate(new Date(content.publishDate));
+    setOwnerId(content.owner_id);
+    setPublishDate(new Date(content.publish_date));
     setIsEditing(true);
   };
 
@@ -50,22 +51,26 @@ export const ContentDetailDialog = ({ content, open, onClose, onEdit, onDelete }
     setIsEditing(false);
   };
 
-  const handleSaveEdit = () => {
-    if (!title || !description || !channel || !owner || !publishDate) {
+  const handleSaveEdit = async () => {
+    if (!title || !description || !channel || !ownerId || !publishDate) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    onEdit(content.id, {
-      title,
-      description,
-      channel,
-      owner,
-      publishDate: format(publishDate, "yyyy-MM-dd"),
-    });
+    try {
+      await onEdit(content.id, {
+        title,
+        description,
+        channel,
+        owner_id: ownerId,
+        publish_date: format(publishDate, "yyyy-MM-dd"),
+      });
 
-    setIsEditing(false);
-    toast.success("Content updated successfully!");
+      setIsEditing(false);
+      toast.success("Content updated successfully!");
+    } catch (error) {
+      // Error already handled in Dashboard
+    }
   };
 
   const handleDeleteClick = () => {
@@ -135,13 +140,13 @@ export const ContentDetailDialog = ({ content, open, onClose, onEdit, onDelete }
 
                 <div className="space-y-2">
                   <Label htmlFor="edit-owner" className="text-card-foreground">Owner *</Label>
-                  <Select value={owner} onValueChange={setOwner} required>
+                  <Select value={ownerId} onValueChange={setOwnerId} required>
                     <SelectTrigger className="border-input bg-background">
                       <SelectValue placeholder="Select owner" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border z-50">
-                      {TEAM_MEMBERS.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
+                      {users.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
                           {member.name}
                         </SelectItem>
                       ))}
@@ -221,7 +226,7 @@ export const ContentDetailDialog = ({ content, open, onClose, onEdit, onDelete }
                     Publish Date
                   </label>
                   <p className="text-card-foreground font-medium">
-                    {format(new Date(content.publishDate), "MMMM d, yyyy")}
+                    {format(new Date(content.publish_date), "MMMM d, yyyy")}
                   </p>
                 </div>
               </div>

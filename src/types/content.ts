@@ -10,18 +10,11 @@ export interface ContentItem {
   title: string;
   description: string;
   channel: string;
-  owner: string;
-  publishDate: string;
-  createdAt: string;
+  owner_id: string;
+  owner?: TeamMember;
+  publish_date: string;
+  created_at: string;
 }
-
-export const TEAM_MEMBERS: TeamMember[] = [
-  { id: '1', name: 'Eli Catesini', role: 'Content Director', initials: 'EC' },
-  { id: '2', name: 'Jose Paz Rendal', role: 'Social Media Manager', initials: 'JPR' },
-  { id: '3', name: 'Liz Rasmussen', role: 'Marketing Lead', initials: 'LR' },
-  { id: '4', name: 'Rich Stevenson', role: 'Brand Strategist', initials: 'RS' },
-  { id: '5', name: 'Val Muda', role: 'Content Producer', initials: 'VM' },
-];
 
 export const CHANNELS = [
   'Press',

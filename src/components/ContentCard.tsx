@@ -1,4 +1,4 @@
-import { ContentItem, TEAM_MEMBERS } from "@/types/content";
+import { ContentItem } from "@/types/content";
 import { Card } from "@/components/ui/card";
 
 interface ContentCardProps {
@@ -7,7 +7,7 @@ interface ContentCardProps {
 }
 
 export const ContentCard = ({ content, onClick }: ContentCardProps) => {
-  const owner = TEAM_MEMBERS.find(m => m.name === content.owner);
+  const owner = content.owner;
   
   return (
     <Card

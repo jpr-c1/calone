@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ContentItem } from "@/types/content";
+import { ContentItem, TeamMember } from "@/types/content";
 import { ContentCard } from "@/components/ContentCard";
 import { ContentDetailDialog } from "@/components/ContentDetailDialog";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,12 @@ import {
 
 interface CalendarGridProps {
   contentItems: ContentItem[];
-  onEditContent: (id: string, updated: Omit<ContentItem, "id" | "createdAt">) => void;
+  users: TeamMember[];
+  onEditContent: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
   onDeleteContent: (id: string) => void;
 }
 
-export const CalendarGrid = ({ contentItems, onEditContent, onDeleteContent }: CalendarGridProps) => {
+export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteContent }: CalendarGridProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -37,7 +38,7 @@ export const CalendarGrid = ({ contentItems, onEditContent, onDeleteContent }: C
 
   const getContentForDay = (day: Date) => {
     return contentItems.filter(item => 
-      isSameDay(new Date(item.publishDate), day)
+      isSameDay(new Date(item.publish_date), day)
     );
   };
 
@@ -135,6 +136,7 @@ export const CalendarGrid = ({ contentItems, onEditContent, onDeleteContent }: C
         content={selectedContent}
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
+        users={users}
         onEdit={onEditContent}
         onDelete={onDeleteContent}
       />
