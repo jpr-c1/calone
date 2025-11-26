@@ -10,24 +10,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CHANNELS, TeamMember } from "@/types/content";
+import { CHANNELS, TeamMember, Campaign } from "@/types/content";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
 interface AddContentDialogProps {
   users: TeamMember[];
-  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => void;
+  campaigns: Campaign[];
+  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string }) => void;
+  onAddCampaign: () => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   initialDate?: Date | null;
 }
 
-export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, onOpenChange, initialDate }: AddContentDialogProps) => {
+export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign, open: controlledOpen, onOpenChange, initialDate }: AddContentDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [channel, setChannel] = useState("");
   const [ownerId, setOwnerId] = useState("");
+  const [campaignId, setCampaignId] = useState<string>("");
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [isAddingCampaign, setIsAddingCampaign] = useState(false);
   const [publishDate, setPublishDate] = useState<Date>();
 
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -40,6 +45,38 @@ export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, on
     }
   }, [open, initialDate]);
   const [isCreating, setIsCreating] = useState(false);
+
+  const handleAddNewCampaign = async () => {
+    if (!newCampaignName.trim()) {
+      toast.error("Please enter a campaign name");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .insert([{ name: newCampaignName.trim() }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setCampaignId(data.id);
+        setNewCampaignName("");
+        setIsAddingCampaign(false);
+        toast.success("Campaign created successfully!");
+        onAddCampaign();
+      }
+    } catch (error: any) {
+      console.error('Error creating campaign:', error);
+      if (error.code === '23505') {
+        toast.error("A campaign with this name already exists");
+      } else {
+        toast.error("Failed to create campaign");
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +138,7 @@ export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, on
         owner_id: ownerId,
         publish_date: format(publishDate, "yyyy-MM-dd"),
         doc_url: docUrl,
+        campaign_id: campaignId || undefined,
       };
 
       onAddContent(newContent);
@@ -110,6 +148,7 @@ export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, on
       setDescription("");
       setChannel("");
       setOwnerId("");
+      setCampaignId("");
       setPublishDate(undefined);
       setOpen(false);
     } catch (error) {
@@ -190,6 +229,70 @@ export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, on
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="campaign" className="text-card-foreground">Campaign (Optional)</Label>
+            {!isAddingCampaign ? (
+              <div className="flex gap-2">
+                <Select value={campaignId} onValueChange={setCampaignId}>
+                  <SelectTrigger className="flex-1 border-input bg-background">
+                    <SelectValue placeholder="Select campaign" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border z-[100]">
+                    {campaigns.map((campaign) => (
+                      <SelectItem key={campaign.id} value={campaign.id}>
+                        {campaign.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsAddingCampaign(true)}
+                  className="flex-shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={newCampaignName}
+                  onChange={(e) => setNewCampaignName(e.target.value)}
+                  placeholder="Enter new campaign name"
+                  className="flex-1 border-input bg-background"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddNewCampaign();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddNewCampaign}
+                  size="sm"
+                  className="flex-shrink-0"
+                >
+                  Add
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsAddingCampaign(false);
+                    setNewCampaignName("");
+                  }}
+                  className="flex-shrink-0"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TeamMember, ContentItem } from "@/types/content";
+import { TeamMember, ContentItem, Campaign } from "@/types/content";
 import { supabase } from "@/lib/supabase";
 import { UserHeader } from "@/components/UserHeader";
 import { AddContentDialog } from "@/components/AddContentDialog";
@@ -14,17 +14,36 @@ interface DashboardProps {
 
 const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadContent();
+    loadCampaigns();
   }, []);
+
+  const loadCampaigns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      
+      if (data) {
+        setCampaigns(data);
+      }
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+    }
+  };
 
   const loadContent = async () => {
     try {
       const { data, error } = await supabase
         .from('content')
-        .select('*, owner:users(*)');
+        .select('*, owner:users(*), campaign:campaigns(*)');
       
       if (error) throw error;
       
@@ -38,7 +57,9 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner: Array.isArray(item.owner) ? item.owner[0] : item.owner,
           publish_date: item.publish_date,
           created_at: item.created_at,
-          doc_url: item.doc_url
+          doc_url: item.doc_url,
+          campaign_id: item.campaign_id,
+          campaign: Array.isArray(item.campaign) ? item.campaign[0] : item.campaign
         }));
         setContentItems(mappedContent);
       }
@@ -50,12 +71,12 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
-  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => {
+  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string }) => {
     try {
       const { data, error } = await supabase
         .from('content')
         .insert([content])
-        .select('*, owner:users(*)')
+        .select('*, owner:users(*), campaign:campaigns(*)')
         .single();
       
       if (error) throw error;
@@ -70,7 +91,9 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
           publish_date: data.publish_date,
           created_at: data.created_at,
-          doc_url: data.doc_url
+          doc_url: data.doc_url,
+          campaign_id: data.campaign_id,
+          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign
         };
         setContentItems([...contentItems, newContent]);
         toast.success('Content added successfully!');
@@ -81,13 +104,13 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
-  const handleEditContent = async (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => {
+  const handleEditContent = async (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string }) => {
     try {
       const { data, error } = await supabase
         .from('content')
         .update(updated)
         .eq('id', id)
-        .select('*, owner:users(*)')
+        .select('*, owner:users(*), campaign:campaigns(*)')
         .single();
       
       if (error) throw error;
@@ -102,7 +125,9 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
           publish_date: data.publish_date,
           created_at: data.created_at,
-          doc_url: data.doc_url
+          doc_url: data.doc_url,
+          campaign_id: data.campaign_id,
+          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign
         };
         setContentItems(contentItems.map(item => 
           item.id === id ? updatedContent : item
@@ -138,7 +163,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
         .from('content')
         .update({ publish_date: newDate })
         .eq('id', id)
-        .select('*, owner:users(*)')
+        .select('*, owner:users(*), campaign:campaigns(*)')
         .single();
       
       if (error) throw error;
@@ -153,7 +178,9 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
           publish_date: data.publish_date,
           created_at: data.created_at,
-          doc_url: data.doc_url
+          doc_url: data.doc_url,
+          campaign_id: data.campaign_id,
+          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign
         };
         setContentItems(contentItems.map(item => 
           item.id === id ? updatedContent : item
@@ -187,16 +214,23 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
             <h2 className="text-3xl font-bold text-foreground mb-2">Content Calendar</h2>
             <p className="text-muted-foreground">Manage your marketing content schedule</p>
           </div>
-          <AddContentDialog users={users} onAddContent={handleAddContent} />
+          <AddContentDialog 
+            users={users} 
+            campaigns={campaigns}
+            onAddContent={handleAddContent}
+            onAddCampaign={loadCampaigns}
+          />
         </div>
 
         <CalendarGrid 
           contentItems={contentItems}
           users={users}
+          campaigns={campaigns}
           onEditContent={handleEditContent}
           onDeleteContent={handleDeleteContent}
           onRescheduleContent={handleRescheduleContent}
           onAddContent={handleAddContent}
+          onAddCampaign={loadCampaigns}
         />
       </main>
     </div>

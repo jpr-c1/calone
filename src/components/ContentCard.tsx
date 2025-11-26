@@ -25,6 +25,11 @@ export const ContentCard = ({ content, onClick, onDragStart }: ContentCardProps)
           <p className="text-[10px] text-muted-foreground truncate">
             {content.channel}
           </p>
+          {content.campaign && (
+            <span className="inline-block mt-0.5 px-1.5 py-0.5 text-[9px] font-medium bg-accent/50 text-accent-foreground rounded">
+              {content.campaign.name}
+            </span>
+          )}
         </div>
         {owner && (
           <div className="w-6 h-6 rounded-full bg-gradient-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground flex-shrink-0">

@@ -7,6 +7,12 @@ export interface TeamMember {
   google_id: string;
 }
 
+export interface Campaign {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface ContentItem {
   id: string;
   title: string;
@@ -17,6 +23,8 @@ export interface ContentItem {
   publish_date: string;
   created_at: string;
   doc_url?: string;
+  campaign_id?: string;
+  campaign?: Campaign;
 }
 
 export const CHANNELS = [
