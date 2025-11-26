@@ -66,7 +66,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           created_at: item.created_at,
           doc_url: item.doc_url,
           campaign_id: item.campaign_id,
-          campaign: Array.isArray(item.campaign) ? item.campaign[0] : item.campaign
+          campaign: Array.isArray(item.campaign) ? item.campaign[0] : item.campaign,
+          published_url: item.published_url
         }));
         setContentItems(mappedContent);
       }
@@ -78,7 +79,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
-  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string }) => {
+  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string; campaign_id?: string; published_url?: string }) => {
     try {
       const { data, error } = await supabase
         .from('content')
@@ -100,7 +101,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           created_at: data.created_at,
           doc_url: data.doc_url,
           campaign_id: data.campaign_id,
-          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign
+          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign,
+          published_url: data.published_url
         };
         setContentItems([...contentItems, newContent]);
         toast.success('Content added successfully!');
@@ -111,7 +113,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
-  const handleEditContent = async (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string }) => {
+  const handleEditContent = async (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string; published_url?: string }) => {
     try {
       const { data, error } = await supabase
         .from('content')
@@ -134,7 +136,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           created_at: data.created_at,
           doc_url: data.doc_url,
           campaign_id: data.campaign_id,
-          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign
+          campaign: Array.isArray(data.campaign) ? data.campaign[0] : data.campaign,
+          published_url: data.published_url
         };
         setContentItems(contentItems.map(item => 
           item.id === id ? updatedContent : item

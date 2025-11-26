@@ -25,6 +25,7 @@ export interface ContentItem {
   doc_url?: string;
   campaign_id?: string;
   campaign?: Campaign;
+  published_url?: string;
 }
 
 export const CHANNELS = [
