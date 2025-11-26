@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, channel, ownerName, publishDate, accessToken } = await req.json();
+    const { title, description, channel, ownerName, publishDate, accessToken, campaignName } = await req.json();
 
     if (!accessToken) {
       throw new Error('Access token is required');
@@ -44,8 +44,10 @@ serve(async (req) => {
 
     // Step 2: Add content to the document
     const content = [
-      { text: `Owner: ${ownerName}\n`, style: 'normal' },
-      { text: `Publish Date: ${publishDate}\n\n`, style: 'normal' },
+      { text: `• Owner: ${ownerName}\n`, style: 'normal' },
+      { text: `• Publish Date: ${publishDate}\n`, style: 'normal' },
+      { text: `• Campaign: ${campaignName || 'None'}\n`, style: 'normal' },
+      { text: `• Description: ${description}\n\n`, style: 'normal' },
       { text: 'Audience\n', style: 'HEADING_2' },
       { text: 'Who specifically is this for? Forwarders / airlines? Enterprise / SMB? Any particular role or persona? Prospects or customers?\n\n\n', style: 'guidance' },
       { text: 'Goal\n', style: 'HEADING_2' },

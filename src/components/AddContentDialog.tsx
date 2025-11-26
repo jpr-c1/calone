@@ -115,6 +115,7 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
               ownerName,
               publishDate: format(publishDate, "MMMM d, yyyy"),
               accessToken: session.provider_token,
+              campaignName: campaignId ? campaigns.find(c => c.id === campaignId)?.name : null,
             }),
           });
 
