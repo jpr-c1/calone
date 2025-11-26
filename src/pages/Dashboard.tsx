@@ -22,6 +22,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
   const [selectedChannel, setSelectedChannel] = useState("all");
   const [selectedOwner, setSelectedOwner] = useState("all");
   const [selectedCampaign, setSelectedCampaign] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadContent();
@@ -167,11 +168,19 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     setSelectedChannel("all");
     setSelectedOwner("all");
     setSelectedCampaign("all");
+    setSearchQuery("");
   };
 
-  // Filter content items based on selected filters
+  // Filter content items based on selected filters and search query
   const filteredContentItems = useMemo(() => {
     return contentItems.filter((item) => {
+      // Search filter (title and description)
+      const searchMatch = 
+        !searchQuery ||
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Dropdown filters
       const channelMatch = selectedChannel === "all" || item.channel === selectedChannel;
       const ownerMatch = selectedOwner === "all" || item.owner_id === selectedOwner;
       
@@ -182,9 +191,9 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
         campaignMatch = item.campaign_id === selectedCampaign;
       }
       
-      return channelMatch && ownerMatch && campaignMatch;
+      return searchMatch && channelMatch && ownerMatch && campaignMatch;
     });
-  }, [contentItems, selectedChannel, selectedOwner, selectedCampaign]);
+  }, [contentItems, searchQuery, selectedChannel, selectedOwner, selectedCampaign]);
 
   const handleRescheduleContent = async (id: string, newDate: string) => {
     try {
@@ -257,9 +266,11 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           selectedChannel={selectedChannel}
           selectedOwner={selectedOwner}
           selectedCampaign={selectedCampaign}
+          searchQuery={searchQuery}
           onChannelChange={setSelectedChannel}
           onOwnerChange={setSelectedOwner}
           onCampaignChange={setSelectedCampaign}
+          onSearchChange={setSearchQuery}
           onClearFilters={handleClearFilters}
         />
 
