@@ -101,6 +101,7 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
 
         // Create Google Doc
         try {
+          console.log('Calling create-google-doc edge function');
           const response = await fetch(`https://ryqoqrxtxucgshdbkvvo.supabase.co/functions/v1/create-google-doc`, {
             method: 'POST',
             headers: {
@@ -122,7 +123,8 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
             docUrl = data.docUrl;
             toast.success("Content and Google Doc created successfully!");
           } else {
-            console.error('Failed to create Google Doc');
+            const errorText = await response.text().catch(() => "");
+            console.error('Failed to create Google Doc:', response.status, errorText);
             toast.warning("Content created, but Google Doc creation failed. You may need to re-authenticate.");
           }
         } catch (docError) {
