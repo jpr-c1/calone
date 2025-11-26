@@ -10,25 +10,26 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { TEAM_MEMBERS, CHANNELS, ContentItem } from "@/types/content";
+import { CHANNELS, TeamMember } from "@/types/content";
 import { toast } from "sonner";
 
 interface AddContentDialogProps {
-  onAddContent: (content: Omit<ContentItem, "id" | "createdAt">) => void;
+  users: TeamMember[];
+  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
 }
 
-export const AddContentDialog = ({ onAddContent }: AddContentDialogProps) => {
+export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [channel, setChannel] = useState("");
-  const [owner, setOwner] = useState("");
+  const [ownerId, setOwnerId] = useState("");
   const [publishDate, setPublishDate] = useState<Date>();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !description || !channel || !owner || !publishDate) {
+    if (!title || !description || !channel || !ownerId || !publishDate) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -37,20 +38,17 @@ export const AddContentDialog = ({ onAddContent }: AddContentDialogProps) => {
       title,
       description,
       channel,
-      owner,
-      publishDate: format(publishDate, "yyyy-MM-dd"),
+      owner_id: ownerId,
+      publish_date: format(publishDate, "yyyy-MM-dd"),
     };
 
-    console.log("New content item:", newContent);
     onAddContent(newContent);
-    
-    toast.success("Content added successfully!");
     
     // Reset form
     setTitle("");
     setDescription("");
     setChannel("");
-    setOwner("");
+    setOwnerId("");
     setPublishDate(undefined);
     setOpen(false);
   };
@@ -112,13 +110,13 @@ export const AddContentDialog = ({ onAddContent }: AddContentDialogProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="owner" className="text-card-foreground">Owner *</Label>
-              <Select value={owner} onValueChange={setOwner} required>
+              <Select value={ownerId} onValueChange={setOwnerId} required>
                 <SelectTrigger className="border-input bg-background">
                   <SelectValue placeholder="Select owner" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border z-50">
-                  {TEAM_MEMBERS.map((member) => (
-                    <SelectItem key={member.id} value={member.name}>
+                  {users.map((member) => (
+                    <SelectItem key={member.id} value={member.id}>
                       {member.name}
                     </SelectItem>
                   ))}

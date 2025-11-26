@@ -1,11 +1,12 @@
-import { TeamMember, TEAM_MEMBERS } from "@/types/content";
+import { TeamMember } from "@/types/content";
 import { TeamMemberCard } from "@/components/TeamMemberCard";
 
 interface LandingProps {
+  users: TeamMember[];
   onSelectUser: (user: TeamMember) => void;
 }
 
-const Landing = ({ onSelectUser }: LandingProps) => {
+const Landing = ({ users, onSelectUser }: LandingProps) => {
   return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
       <div className="w-full max-w-5xl">
@@ -19,7 +20,7 @@ const Landing = ({ onSelectUser }: LandingProps) => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {TEAM_MEMBERS.map((member) => (
+          {users.map((member) => (
             <TeamMemberCard
               key={member.id}
               member={member}
