@@ -1,53 +1,78 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { TeamMember } from "@/types/content";
 import { supabase } from "@/lib/supabase";
-import Landing from "./Landing";
 import Dashboard from "./Dashboard";
-
-const STORAGE_KEY = "cal_one_current_user";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [currentUser, setCurrentUser] = useState<TeamMember | null>(null);
   const [users, setUsers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadUsers();
+    checkAuth();
   }, []);
 
-  const loadUsers = async () => {
+  const checkAuth = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*');
+      const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) throw error;
-      
-      if (data) {
-        setUsers(data);
-        
-        // Check for saved user
-        const savedUserId = localStorage.getItem(STORAGE_KEY);
-        if (savedUserId) {
-          const user = data.find(m => m.id === savedUserId);
-          if (user) setCurrentUser(user);
-        }
+
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      // Load current user from database
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("google_id", session.user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      if (userData) {
+        setCurrentUser(userData);
+        loadAllUsers();
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error("Auth error:", error);
+      navigate("/auth");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectUser = (user: TeamMember) => {
-    setCurrentUser(user);
-    localStorage.setItem(STORAGE_KEY, user.id);
+  const loadAllUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .order("name");
+      
+      if (error) throw error;
+      if (data) setUsers(data);
+    } catch (error) {
+      console.error("Error loading users:", error);
+    }
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem(STORAGE_KEY);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign out",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -59,7 +84,7 @@ const Index = () => {
   }
 
   if (!currentUser) {
-    return <Landing users={users} onSelectUser={handleSelectUser} />;
+    return null;
   }
 
   return <Dashboard currentUser={currentUser} users={users} onLogout={handleLogout} />;
