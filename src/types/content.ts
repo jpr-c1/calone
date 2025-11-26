@@ -16,6 +16,7 @@ export interface ContentItem {
   owner?: TeamMember;
   publish_date: string;
   created_at: string;
+  doc_url?: string;
 }
 
 export const CHANNELS = [
