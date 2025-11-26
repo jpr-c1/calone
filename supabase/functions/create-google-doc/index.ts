@@ -17,8 +17,8 @@ serve(async (req) => {
       throw new Error('Access token is required');
     }
 
-    // Create Google Doc
-    const docTitle = `[${channel}] - ${title}`;
+    // Create Google Doc with new title format: yyyy-mm-dd [Title] [Channel]
+    const docTitle = `${publishDate} ${title} [${channel}]`;
     
     // Step 1: Create a new Google Doc
     const createDocResponse = await fetch('https://docs.googleapis.com/v1/documents', {
@@ -44,24 +44,18 @@ serve(async (req) => {
 
     // Step 2: Add content to the document
     const content = [
-      { text: 'Content Brief\n', style: 'HEADING_1' },
-      { text: '\n' },
-      { text: 'Title\n', style: 'HEADING_2' },
-      { text: `${title}\n\n` },
-      { text: 'Description\n', style: 'HEADING_2' },
-      { text: `${description}\n\n` },
-      { text: 'Channel\n', style: 'HEADING_2' },
-      { text: `${channel}\n\n` },
-      { text: 'Owner\n', style: 'HEADING_2' },
-      { text: `${ownerName}\n\n` },
-      { text: 'Publish Date\n', style: 'HEADING_2' },
-      { text: `${publishDate}\n\n` },
-      { text: 'Key Messages\n', style: 'HEADING_2' },
-      { text: '\n\n\n' },
-      { text: 'Target Audience\n', style: 'HEADING_2' },
-      { text: '\n\n\n' },
-      { text: 'Call to Action\n', style: 'HEADING_2' },
-      { text: '\n\n\n' },
+      { text: `Owner: ${ownerName}\n`, style: 'normal' },
+      { text: `Publish Date: ${publishDate}\n\n`, style: 'normal' },
+      { text: 'Audience\n', style: 'HEADING_2' },
+      { text: 'Who specifically is this for? Forwarders / airlines? Enterprise / SMB? Any particular role or persona? Prospects or customers?\n\n\n', style: 'guidance' },
+      { text: 'Goal\n', style: 'HEADING_2' },
+      { text: 'What should this piece achieve? State the outcome, not the activity. The more precise you are, the better.\n\n\n', style: 'guidance' },
+      { text: 'Key Messages (3 max)\n', style: 'HEADING_2' },
+      { text: 'What are the 2-3 things we want them to remember? Each should be a complete thought, not a topic. They should generally relate to our positioning canvas.\n\n\n', style: 'guidance' },
+      { text: 'Approach & Rationale\n', style: 'HEADING_2' },
+      { text: 'How are we delivering this (format, channel, author/voice, angle) and why? What\'s the insight behind these choices? Include alternatives you considered.\n\n\n', style: 'guidance' },
+      { text: 'Supporting Material\n', style: 'HEADING_2' },
+      { text: 'What are you basing this on? Customer quotes, research, data points, reference links, internal notes.\n\n\n', style: 'guidance' },
     ];
 
     const requests = [];
@@ -76,9 +70,10 @@ serve(async (req) => {
         },
       });
 
-      // Apply style if specified
-      if (item.style) {
-        const endIndex = index + item.text.length;
+      const endIndex = index + item.text.length;
+
+      // Apply style based on type
+      if (item.style === 'HEADING_2') {
         requests.push({
           updateParagraphStyle: {
             range: {
@@ -86,9 +81,32 @@ serve(async (req) => {
               endIndex: endIndex,
             },
             paragraphStyle: {
-              namedStyleType: item.style,
+              namedStyleType: 'HEADING_2',
             },
             fields: 'namedStyleType',
+          },
+        });
+      } else if (item.style === 'guidance') {
+        // Apply grey italic formatting for guidance text
+        requests.push({
+          updateTextStyle: {
+            range: {
+              startIndex: index,
+              endIndex: endIndex - 1, // Exclude newline
+            },
+            textStyle: {
+              foregroundColor: {
+                color: {
+                  rgbColor: {
+                    red: 0.5,
+                    green: 0.5,
+                    blue: 0.5,
+                  },
+                },
+              },
+              italic: true,
+            },
+            fields: 'foregroundColor,italic',
           },
         });
       }
