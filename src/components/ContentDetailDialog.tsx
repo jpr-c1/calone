@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit, Trash2, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -249,6 +249,22 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
                   )}
                 </div>
               </div>
+
+              {content.doc_url && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground block mb-2">
+                    Content Brief
+                  </label>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(content.doc_url!, '_blank')}
+                    className="hover:bg-primary/10 hover:border-primary"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Brief in Google Docs
+                  </Button>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4 border-t border-border">
                 <Button

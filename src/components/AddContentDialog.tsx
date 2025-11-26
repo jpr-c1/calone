@@ -12,10 +12,11 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CHANNELS, TeamMember } from "@/types/content";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface AddContentDialogProps {
   users: TeamMember[];
-  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
+  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => void;
 }
 
 export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps) => {
@@ -25,8 +26,9 @@ export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps)
   const [channel, setChannel] = useState("");
   const [ownerId, setOwnerId] = useState("");
   const [publishDate, setPublishDate] = useState<Date>();
+  const [isCreating, setIsCreating] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title || !description || !channel || !ownerId || !publishDate) {
@@ -34,23 +36,75 @@ export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps)
       return;
     }
 
-    const newContent = {
-      title,
-      description,
-      channel,
-      owner_id: ownerId,
-      publish_date: format(publishDate, "yyyy-MM-dd"),
-    };
+    setIsCreating(true);
 
-    onAddContent(newContent);
-    
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setChannel("");
-    setOwnerId("");
-    setPublishDate(undefined);
-    setOpen(false);
+    try {
+      // Get current session to access Google OAuth token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      let docUrl = null;
+
+      if (session?.provider_token) {
+        // Get owner name
+        const owner = users.find(u => u.id === ownerId);
+        const ownerName = owner?.name || "Unknown";
+
+        // Create Google Doc
+        try {
+          const response = await fetch(`https://ryqoqrxtxucgshdbkvvo.supabase.co/functions/v1/create-google-doc`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              title,
+              description,
+              channel,
+              ownerName,
+              publishDate: format(publishDate, "MMMM d, yyyy"),
+              accessToken: session.provider_token,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            docUrl = data.docUrl;
+            toast.success("Content and Google Doc created successfully!");
+          } else {
+            console.error('Failed to create Google Doc');
+            toast.warning("Content created, but Google Doc creation failed. You may need to re-authenticate.");
+          }
+        } catch (docError) {
+          console.error('Error creating Google Doc:', docError);
+          toast.warning("Content created, but Google Doc creation failed.");
+        }
+      }
+
+      const newContent = {
+        title,
+        description,
+        channel,
+        owner_id: ownerId,
+        publish_date: format(publishDate, "yyyy-MM-dd"),
+        doc_url: docUrl,
+      };
+
+      onAddContent(newContent);
+      
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setChannel("");
+      setOwnerId("");
+      setPublishDate(undefined);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      toast.error("Failed to create content");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -164,8 +218,9 @@ export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps)
             <Button
               type="submit"
               className="flex-1 bg-gradient-primary hover:opacity-90"
+              disabled={isCreating}
             >
-              Save Content
+              {isCreating ? "Creating..." : "Save Content"}
             </Button>
           </div>
         </form>

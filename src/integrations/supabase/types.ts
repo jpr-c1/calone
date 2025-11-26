@@ -19,6 +19,7 @@ export type Database = {
           channel: string
           created_at: string | null
           description: string
+          doc_url: string | null
           id: string
           owner_id: string
           publish_date: string
@@ -28,6 +29,7 @@ export type Database = {
           channel: string
           created_at?: string | null
           description: string
+          doc_url?: string | null
           id?: string
           owner_id: string
           publish_date: string
@@ -37,6 +39,7 @@ export type Database = {
           channel?: string
           created_at?: string | null
           description?: string
+          doc_url?: string | null
           id?: string
           owner_id?: string
           publish_date?: string
