@@ -132,6 +132,40 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
+  const handleRescheduleContent = async (id: string, newDate: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('content')
+        .update({ publish_date: newDate })
+        .eq('id', id)
+        .select('*, owner:users(*)')
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const updatedContent: ContentItem = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          channel: data.channel,
+          owner_id: data.owner_id,
+          owner: Array.isArray(data.owner) ? data.owner[0] : data.owner,
+          publish_date: data.publish_date,
+          created_at: data.created_at,
+          doc_url: data.doc_url
+        };
+        setContentItems(contentItems.map(item => 
+          item.id === id ? updatedContent : item
+        ));
+        toast.success('Content rescheduled');
+      }
+    } catch (error) {
+      console.error('Error rescheduling content:', error);
+      toast.error('Failed to reschedule content');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-subtle">
@@ -161,6 +195,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           users={users}
           onEditContent={handleEditContent}
           onDeleteContent={handleDeleteContent}
+          onRescheduleContent={handleRescheduleContent}
+          onAddContent={handleAddContent}
         />
       </main>
     </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ContentItem, TeamMember } from "@/types/content";
 import { ContentCard } from "@/components/ContentCard";
 import { ContentDetailDialog } from "@/components/ContentDetailDialog";
+import { AddContentDialog } from "@/components/AddContentDialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
@@ -21,12 +22,17 @@ interface CalendarGridProps {
   users: TeamMember[];
   onEditContent: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => void;
   onDeleteContent: (id: string) => void;
+  onRescheduleContent: (id: string, newDate: string) => void;
+  onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => void;
 }
 
-export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteContent }: CalendarGridProps) => {
+export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteContent, onRescheduleContent, onAddContent }: CalendarGridProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [draggedContent, setDraggedContent] = useState<string | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -57,6 +63,37 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
 
   const isCurrentMonth = (day: Date) => {
     return format(day, 'MM') === format(currentMonth, 'MM');
+  };
+
+  const handleCellClick = (day: Date, event: React.MouseEvent) => {
+    // Only open add dialog if clicking on empty space (not on a card)
+    if ((event.target as HTMLElement).closest('.content-card')) {
+      return;
+    }
+    setSelectedDate(day);
+    setAddDialogOpen(true);
+  };
+
+  const handleDragStart = (contentId: string) => {
+    setDraggedContent(contentId);
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (day: Date) => {
+    if (draggedContent) {
+      const newDate = format(day, 'yyyy-MM-dd');
+      onRescheduleContent(draggedContent, newDate);
+      setDraggedContent(null);
+    }
+  };
+
+  const handleAddContentSubmit = (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => {
+    onAddContent(content);
+    setAddDialogOpen(false);
+    setSelectedDate(null);
   };
 
   return (
@@ -108,7 +145,10 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[120px] border-r border-b border-border last:border-r-0 p-2 ${
+                onClick={(e) => handleCellClick(day, e)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleDrop(day)}
+                className={`min-h-[120px] border-r border-b border-border last:border-r-0 p-2 cursor-pointer hover:bg-accent/5 transition-colors ${
                   isOtherMonth ? 'bg-muted/30' : 'bg-card'
                 } ${index >= days.length - 7 ? 'border-b-0' : ''}`}
               >
@@ -123,6 +163,7 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
                       key={content.id}
                       content={content}
                       onClick={() => handleContentClick(content)}
+                      onDragStart={() => handleDragStart(content.id)}
                     />
                   ))}
                 </div>
@@ -139,6 +180,14 @@ export const CalendarGrid = ({ contentItems, users, onEditContent, onDeleteConte
         users={users}
         onEdit={onEditContent}
         onDelete={onDeleteContent}
+      />
+
+      <AddContentDialog 
+        users={users}
+        onAddContent={handleAddContentSubmit}
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        initialDate={selectedDate}
       />
     </>
   );

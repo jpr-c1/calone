@@ -4,15 +4,18 @@ import { Card } from "@/components/ui/card";
 interface ContentCardProps {
   content: ContentItem;
   onClick: () => void;
+  onDragStart: () => void;
 }
 
-export const ContentCard = ({ content, onClick }: ContentCardProps) => {
+export const ContentCard = ({ content, onClick, onDragStart }: ContentCardProps) => {
   const owner = content.owner;
   
   return (
     <Card
+      draggable
+      onDragStart={onDragStart}
       onClick={onClick}
-      className="p-2 mb-1.5 cursor-pointer hover:shadow-medium transition-all duration-200 border-l-4 border-l-primary bg-card"
+      className="content-card p-2 mb-1.5 cursor-move hover:shadow-medium transition-all duration-200 border-l-4 border-l-primary bg-card active:opacity-50"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">

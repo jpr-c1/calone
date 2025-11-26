@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,28 @@ import { supabase } from "@/lib/supabase";
 interface AddContentDialogProps {
   users: TeamMember[];
   onAddContent: (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialDate?: Date | null;
 }
 
-export const AddContentDialog = ({ users, onAddContent }: AddContentDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const AddContentDialog = ({ users, onAddContent, open: controlledOpen, onOpenChange, initialDate }: AddContentDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [channel, setChannel] = useState("");
   const [ownerId, setOwnerId] = useState("");
   const [publishDate, setPublishDate] = useState<Date>();
+
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
+
+  // Set initial date when dialog opens
+  useEffect(() => {
+    if (open && initialDate) {
+      setPublishDate(initialDate);
+    }
+  }, [open, initialDate]);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
