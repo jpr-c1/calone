@@ -87,12 +87,16 @@ serve(async (req) => {
           },
         });
       } else if (item.style === 'guidance') {
+        // Find the actual text content (exclude trailing newlines)
+        const textContent = item.text.trimEnd();
+        const textEndIndex = index + textContent.length;
+        
         // Apply grey italic formatting for guidance text
         requests.push({
           updateTextStyle: {
             range: {
               startIndex: index,
-              endIndex: endIndex - 1, // Exclude newline
+              endIndex: textEndIndex,
             },
             textStyle: {
               foregroundColor: {
