@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TeamMember, ContentItem, Campaign } from "@/types/content";
 import { supabase } from "@/lib/supabase";
 import { UserHeader } from "@/components/UserHeader";
 import { AddContentDialog } from "@/components/AddContentDialog";
 import { CalendarGrid } from "@/components/CalendarGrid";
+import { FilterBar } from "@/components/FilterBar";
 import { toast } from "sonner";
 
 interface DashboardProps {
@@ -16,6 +17,11 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filter states
+  const [selectedChannel, setSelectedChannel] = useState("all");
+  const [selectedOwner, setSelectedOwner] = useState("all");
+  const [selectedCampaign, setSelectedCampaign] = useState("all");
 
   useEffect(() => {
     loadContent();
@@ -157,6 +163,29 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
+  const handleClearFilters = () => {
+    setSelectedChannel("all");
+    setSelectedOwner("all");
+    setSelectedCampaign("all");
+  };
+
+  // Filter content items based on selected filters
+  const filteredContentItems = useMemo(() => {
+    return contentItems.filter((item) => {
+      const channelMatch = selectedChannel === "all" || item.channel === selectedChannel;
+      const ownerMatch = selectedOwner === "all" || item.owner_id === selectedOwner;
+      
+      let campaignMatch = true;
+      if (selectedCampaign === "none") {
+        campaignMatch = !item.campaign_id;
+      } else if (selectedCampaign !== "all") {
+        campaignMatch = item.campaign_id === selectedCampaign;
+      }
+      
+      return channelMatch && ownerMatch && campaignMatch;
+    });
+  }, [contentItems, selectedChannel, selectedOwner, selectedCampaign]);
+
   const handleRescheduleContent = async (id: string, newDate: string) => {
     try {
       const { data, error } = await supabase
@@ -222,8 +251,20 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
           />
         </div>
 
+        <FilterBar
+          users={users}
+          campaigns={campaigns}
+          selectedChannel={selectedChannel}
+          selectedOwner={selectedOwner}
+          selectedCampaign={selectedCampaign}
+          onChannelChange={setSelectedChannel}
+          onOwnerChange={setSelectedOwner}
+          onCampaignChange={setSelectedCampaign}
+          onClearFilters={handleClearFilters}
+        />
+
         <CalendarGrid 
-          contentItems={contentItems}
+          contentItems={filteredContentItems}
           users={users}
           campaigns={campaigns}
           onEditContent={handleEditContent}
