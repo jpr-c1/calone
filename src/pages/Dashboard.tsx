@@ -50,7 +50,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     }
   };
 
-  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string }) => {
+  const handleAddContent = async (content: { title: string; description: string; channel: string; owner_id: string; publish_date: string; doc_url?: string }) => {
     try {
       const { data, error } = await supabase
         .from('content')

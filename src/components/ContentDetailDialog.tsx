@@ -36,8 +36,6 @@ export const ContentDetailDialog = ({ content, open, onClose, users, onEdit, onD
 
   if (!content) return null;
 
-  console.log("ContentDetailDialog content", content);
-
   const ownerData = content.owner;
 
   const handleEditClick = () => {
