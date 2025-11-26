@@ -1,14 +1,36 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import { TeamMember, TEAM_MEMBERS } from "@/types/content";
+import Landing from "./Landing";
+import Dashboard from "./Dashboard";
+
+const STORAGE_KEY = "cal_one_current_user";
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [currentUser, setCurrentUser] = useState<TeamMember | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem(STORAGE_KEY);
+    if (savedUser) {
+      const user = TEAM_MEMBERS.find(m => m.id === savedUser);
+      if (user) setCurrentUser(user);
+    }
+  }, []);
+
+  const handleSelectUser = (user: TeamMember) => {
+    setCurrentUser(user);
+    localStorage.setItem(STORAGE_KEY, user.id);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
+  if (!currentUser) {
+    return <Landing onSelectUser={handleSelectUser} />;
+  }
+
+  return <Dashboard currentUser={currentUser} onLogout={handleLogout} />;
 };
 
 export default Index;
