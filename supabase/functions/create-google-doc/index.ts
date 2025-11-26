@@ -17,8 +17,9 @@ serve(async (req) => {
       throw new Error('Access token is required');
     }
 
-    // Create Google Doc with new title format: yyyy-mm-dd [Title] [Channel]
-    const docTitle = `${publishDate} ${title} [${channel}]`;
+    // Create Google Doc with new title format: YYYY-MM-DD [Title] [Channel]
+    const formattedDate = new Date(publishDate).toISOString().split('T')[0];
+    const docTitle = `${formattedDate} ${title} [${channel}]`;
     
     // Step 1: Create a new Google Doc
     const createDocResponse = await fetch('https://docs.googleapis.com/v1/documents', {
