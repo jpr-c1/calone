@@ -35,20 +35,7 @@ const Dashboard = ({ currentUser, onLogout }: DashboardProps) => {
           <AddContentDialog onAddContent={handleAddContent} />
         </div>
 
-        {contentItems.length === 0 ? (
-          <div className="bg-card border border-border rounded-lg p-12 text-center shadow-card">
-            <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-              <Calendar className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-semibold text-card-foreground mb-2">No content yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Get started by adding your first content item
-            </p>
-            <AddContentDialog onAddContent={handleAddContent} />
-          </div>
-        ) : (
-          <CalendarGrid contentItems={contentItems} />
-        )}
+        <CalendarGrid contentItems={contentItems} />
       </main>
     </div>
   );
