@@ -42,6 +42,7 @@ export type Database = {
           id: string
           owner_id: string
           publish_date: string
+          published_url: string | null
           title: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           id?: string
           owner_id: string
           publish_date: string
+          published_url?: string | null
           title: string
         }
         Update: {
@@ -64,6 +66,7 @@ export type Database = {
           id?: string
           owner_id?: string
           publish_date?: string
+          published_url?: string | null
           title?: string
         }
         Relationships: [

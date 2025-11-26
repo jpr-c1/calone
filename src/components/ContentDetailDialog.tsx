@@ -22,7 +22,7 @@ interface ContentDetailDialogProps {
   onClose: () => void;
   users: TeamMember[];
   campaigns: Campaign[];
-  onEdit: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string }) => void;
+  onEdit: (id: string, updated: { title: string; description: string; channel: string; owner_id: string; publish_date: string; campaign_id?: string; published_url?: string }) => void;
   onDelete: (id: string) => void;
   onAddCampaign: () => void;
 }
@@ -39,6 +39,8 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
   const [newCampaignName, setNewCampaignName] = useState("");
   const [isAddingCampaign, setIsAddingCampaign] = useState(false);
   const [publishDate, setPublishDate] = useState<Date>();
+  const [publishedUrl, setPublishedUrl] = useState("");
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
 
   if (!content) return null;
 
@@ -83,6 +85,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
     setOwnerId(content.owner_id);
     setCampaignId(content.campaign_id || "");
     setPublishDate(new Date(content.publish_date));
+    setPublishedUrl(content.published_url || "");
     setIsEditing(true);
   };
 
@@ -104,9 +107,11 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
         owner_id: ownerId,
         publish_date: format(publishDate, "yyyy-MM-dd"),
         campaign_id: campaignId || undefined,
+        published_url: publishedUrl || undefined,
       });
 
       setIsEditing(false);
+      setIsEditingUrl(false);
       toast.success("Content updated successfully!");
     } catch (error) {
       // Error already handled in Dashboard
@@ -263,28 +268,20 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
               <div className="space-y-2">
                 <Label className="text-card-foreground">Publish Date *</Label>
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal border-input bg-background",
-                        !publishDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {publishDate ? format(publishDate, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-popover border-border z-50" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={publishDate}
-                      onSelect={setPublishDate}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
+...
                 </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-published-url" className="text-card-foreground">Published URL</Label>
+                <Input
+                  id="edit-published-url"
+                  type="url"
+                  value={publishedUrl}
+                  onChange={(e) => setPublishedUrl(e.target.value)}
+                  placeholder="https://example.com/published-content"
+                  className="border-input bg-background"
+                />
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -381,6 +378,88 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                   </Button>
                 </div>
               )}
+
+              <div>
+                <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  Published URL
+                </label>
+                {!content.published_url && !isEditingUrl ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setPublishedUrl("");
+                      setIsEditingUrl(true);
+                    }}
+                    className="w-full justify-start text-muted-foreground hover:bg-primary/10 hover:border-primary"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Published URL
+                  </Button>
+                ) : isEditingUrl ? (
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      value={publishedUrl}
+                      onChange={(e) => setPublishedUrl(e.target.value)}
+                      placeholder="https://example.com/published-content"
+                      className="flex-1 border-input bg-background"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await onEdit(content.id, {
+                            title: content.title,
+                            description: content.description,
+                            channel: content.channel,
+                            owner_id: content.owner_id,
+                            publish_date: content.publish_date,
+                            campaign_id: content.campaign_id,
+                            published_url: publishedUrl || undefined,
+                          });
+                          setIsEditingUrl(false);
+                          toast.success("Published URL updated!");
+                        } catch (error) {
+                          toast.error("Failed to update URL");
+                        }
+                      }}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPublishedUrl(content.published_url || "");
+                        setIsEditingUrl(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(content.published_url!, '_blank')}
+                      className="flex-1 justify-start hover:bg-primary/10 hover:border-primary"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {content.published_url}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => {
+                        setPublishedUrl(content.published_url || "");
+                        setIsEditingUrl(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-3 pt-4 border-t border-border">
                 <Button
