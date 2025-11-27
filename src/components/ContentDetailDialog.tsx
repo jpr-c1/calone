@@ -268,7 +268,27 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
               <div className="space-y-2">
                 <Label className="text-card-foreground">Publish Date *</Label>
                 <Popover>
-...
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal border-input bg-background",
+                        !publishDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {publishDate ? format(publishDate, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-popover border-border z-50" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={publishDate}
+                      onSelect={setPublishDate}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
                 </Popover>
               </div>
 
