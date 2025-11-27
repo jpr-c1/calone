@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const TARGET_FOLDER_ID = '1q816yim3GYzq0yxTC-OXr29wyhiwTsb-';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -43,7 +45,27 @@ serve(async (req) => {
     const docId = docData.documentId;
     const docUrl = `https://docs.google.com/document/d/${docId}/edit`;
 
-    // Step 2: Add content to the document
+    // Step 2: Move document to shared folder
+    try {
+      const moveResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${docId}?addParents=${TARGET_FOLDER_ID}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!moveResponse.ok) {
+        const errorText = await moveResponse.text();
+        console.error('Warning: Could not move doc to folder:', errorText);
+        // Continue anyway - doc is still created and usable
+      }
+    } catch (moveError) {
+      console.error('Warning: Error moving doc to folder:', moveError);
+      // Continue anyway - doc is still created and usable
+    }
+
+    // Step 3: Add content to the document
     const content = [
       { text: `• Owner: ${ownerName}\n`, style: 'normal' },
       { text: `• Publish Date: ${publishDate}\n`, style: 'normal' },
