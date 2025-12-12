@@ -300,7 +300,7 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
 
           <div className="space-y-2">
             <Label className="text-card-foreground">Publish Date *</Label>
-            <Popover>
+            <Popover modal={false}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
