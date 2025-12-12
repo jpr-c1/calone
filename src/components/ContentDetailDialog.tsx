@@ -131,8 +131,12 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px] bg-card border-border">
+      <Dialog open={open} onOpenChange={onClose} modal={false}>
+        <DialogContent 
+          className="sm:max-w-[600px] bg-card border-border"
+          onInteractOutside={(e) => e.preventDefault()}
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-card-foreground pr-8">
               {isEditing ? "Edit Content" : content.title}
