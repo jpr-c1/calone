@@ -1,11 +1,45 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const TARGET_FOLDER_ID = '1q816yim3GYzq0yxTC-OXr29wyhiwTsb-';
+const GOOGLE_CLIENT_ID = Deno.env.get('GOOGLE_CLIENT_ID');
+const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+async function refreshAccessToken(refreshToken: string): Promise<string | null> {
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    console.error('Google OAuth credentials not configured');
+    return null;
+  }
+
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to refresh access token:', errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error('Error refreshing access token:', error);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,10 +47,22 @@ serve(async (req) => {
   }
 
   try {
-    const { title, description, channel, ownerName, publishDate, accessToken, campaignName } = await req.json();
+    const { title, description, channel, ownerName, publishDate, accessToken, refreshToken, campaignName } = await req.json();
 
-    if (!accessToken) {
-      throw new Error('Access token is required');
+    // Try to get a valid access token
+    let validAccessToken = accessToken;
+    
+    // If no access token or if we have a refresh token, try to get a fresh token
+    if (!validAccessToken && refreshToken) {
+      console.log('No access token provided, attempting to refresh');
+      validAccessToken = await refreshAccessToken(refreshToken);
+    }
+
+    if (!validAccessToken) {
+      return new Response(
+        JSON.stringify({ error: 'No valid access token available. Please re-authenticate with Google.' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Create Google Doc with new title format: YYYY-MM-DD [Title] [Channel]
@@ -24,16 +70,41 @@ serve(async (req) => {
     const docTitle = `${formattedDate} ${title} [${channel}]`;
     
     // Step 1: Create a new Google Doc
-    const createDocResponse = await fetch('https://docs.googleapis.com/v1/documents', {
+    let createDocResponse = await fetch('https://docs.googleapis.com/v1/documents', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${validAccessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         title: docTitle,
       }),
     });
+
+    // If failed with 401 and we have refresh token, try to refresh and retry
+    if (createDocResponse.status === 401 && refreshToken) {
+      console.log('Access token expired, attempting to refresh');
+      validAccessToken = await refreshAccessToken(refreshToken);
+      
+      if (!validAccessToken) {
+        return new Response(
+          JSON.stringify({ error: 'Failed to refresh access token. Please re-authenticate with Google.' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Retry with new token
+      createDocResponse = await fetch('https://docs.googleapis.com/v1/documents', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${validAccessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: docTitle,
+        }),
+      });
+    }
 
     if (!createDocResponse.ok) {
       const errorText = await createDocResponse.text();
@@ -50,7 +121,7 @@ serve(async (req) => {
       const moveResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${docId}?addParents=${TARGET_FOLDER_ID}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${validAccessToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -147,7 +218,7 @@ serve(async (req) => {
     const updateResponse = await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${validAccessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ requests }),

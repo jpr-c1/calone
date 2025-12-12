@@ -58,9 +58,16 @@ const AuthCallback = () => {
                 google_id: session.user.id,
                 initials,
                 role: "Team Member",
+                google_refresh_token: session.provider_refresh_token || null,
               });
 
             if (insertError) throw insertError;
+          } else if (session.provider_refresh_token) {
+            // Update existing user's refresh token if we got a new one
+            await supabase
+              .from("users")
+              .update({ google_refresh_token: session.provider_refresh_token })
+              .eq("google_id", session.user.id);
           }
 
           navigate("/");
