@@ -90,6 +90,7 @@ export type Database = {
         Row: {
           email: string
           google_id: string
+          google_refresh_token: string | null
           id: string
           initials: string
           name: string
@@ -98,6 +99,7 @@ export type Database = {
         Insert: {
           email: string
           google_id: string
+          google_refresh_token?: string | null
           id?: string
           initials: string
           name: string
@@ -106,6 +108,7 @@ export type Database = {
         Update: {
           email?: string
           google_id?: string
+          google_refresh_token?: string | null
           id?: string
           initials?: string
           name?: string

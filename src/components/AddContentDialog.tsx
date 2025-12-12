@@ -94,44 +94,56 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
       
       let docUrl = null;
 
-      if (session?.provider_token) {
-        // Get owner name
-        const owner = users.find(u => u.id === ownerId);
-        const ownerName = owner?.name || "Unknown";
+      // Get owner name
+      const owner = users.find(u => u.id === ownerId);
+      const ownerName = owner?.name || "Unknown";
 
-        // Create Google Doc
-        try {
-          console.log('Calling create-google-doc edge function');
-          const response = await fetch(`https://ryqoqrxtxucgshdbkvvo.supabase.co/functions/v1/create-google-doc`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              title,
-              description,
-              channel,
-              ownerName,
-              publishDate: format(publishDate, "MMMM d, yyyy"),
-              accessToken: session.provider_token,
-              campaignName: campaignId ? campaigns.find(c => c.id === campaignId)?.name : null,
-            }),
-          });
+      // Try to get refresh token from user record if provider_token is missing
+      let refreshToken = null;
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('google_refresh_token')
+          .eq('google_id', session.user.id)
+          .single();
+        refreshToken = userData?.google_refresh_token;
+      }
 
-          if (response.ok) {
-            const data = await response.json();
-            docUrl = data.docUrl;
-            toast.success("Content and Google Doc created successfully!");
-          } else {
-            const errorText = await response.text().catch(() => "");
-            console.error('Failed to create Google Doc:', response.status, errorText);
-            toast.warning("Content created, but Google Doc creation failed. You may need to re-authenticate.");
-          }
-        } catch (docError) {
-          console.error('Error creating Google Doc:', docError);
+      // Create Google Doc
+      try {
+        console.log('Calling create-google-doc edge function');
+        const response = await fetch(`https://ryqoqrxtxucgshdbkvvo.supabase.co/functions/v1/create-google-doc`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            title,
+            description,
+            channel,
+            ownerName,
+            publishDate: format(publishDate, "MMMM d, yyyy"),
+            accessToken: session?.provider_token || null,
+            refreshToken,
+            campaignName: campaignId ? campaigns.find(c => c.id === campaignId)?.name : null,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          docUrl = data.docUrl;
+          toast.success("Content and Google Doc created successfully!");
+        } else if (response.status === 401) {
+          toast.warning("Google session expired. Please log out and log back in to create Google Docs.");
+        } else {
+          const errorText = await response.text().catch(() => "");
+          console.error('Failed to create Google Doc:', response.status, errorText);
           toast.warning("Content created, but Google Doc creation failed.");
         }
+      } catch (docError) {
+        console.error('Error creating Google Doc:', docError);
+        toast.warning("Content created, but Google Doc creation failed.");
       }
 
       const newContent = {
