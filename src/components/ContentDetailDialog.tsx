@@ -173,7 +173,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                     <SelectTrigger className="border-input bg-background">
                       <SelectValue placeholder="Select channel" />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border-border z-50">
+                    <SelectContent className="bg-popover border-border z-[100]">
                       {CHANNELS.map((ch) => (
                         <SelectItem key={ch} value={ch}>
                           {ch}
@@ -189,7 +189,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                     <SelectTrigger className="border-input bg-background">
                       <SelectValue placeholder="Select owner" />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border-border z-50">
+                    <SelectContent className="bg-popover border-border z-[100]">
                       {users.map((member) => (
                         <SelectItem key={member.id} value={member.id}>
                           {member.name}
@@ -280,7 +280,12 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                       {publishDate ? format(publishDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-popover border-border z-50" align="start">
+                  <PopoverContent 
+                    className="w-auto p-0 bg-popover border-border z-[100]" 
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
                     <Calendar
                       mode="single"
                       selected={publishDate}
