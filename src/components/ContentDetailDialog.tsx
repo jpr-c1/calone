@@ -208,12 +208,12 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                 <Label htmlFor="edit-campaign" className="text-card-foreground">Campaign (Optional)</Label>
                 {!isAddingCampaign ? (
                   <div className="flex gap-2">
-                    <Select value={campaignId} onValueChange={setCampaignId}>
+                    <Select value={campaignId || "__none__"} onValueChange={(val) => setCampaignId(val === "__none__" ? "" : val)}>
                       <SelectTrigger className="flex-1 border-input bg-background">
                         <SelectValue placeholder="Select campaign" />
                       </SelectTrigger>
                       <SelectContent className="bg-popover border-border z-[100]">
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="__none__">None</SelectItem>
                         {campaigns.map((campaign) => (
                           <SelectItem key={campaign.id} value={campaign.id}>
                             {campaign.name}
