@@ -177,18 +177,18 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
   return (
     <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-primary hover:opacity-90 shadow-soft">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Add Content
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="sm:max-w-[600px] bg-card border-border"
+        className="sm:max-w-[600px] bg-card border-border/60"
         onInteractOutside={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-card-foreground">Add New Content</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-foreground">Add New Content</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
@@ -357,7 +357,7 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-gradient-primary hover:opacity-90"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={isCreating}
             >
               {isCreating ? "Creating..." : "Save Content"}

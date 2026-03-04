@@ -1,110 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/*
+ * cal.one Design System — cargo.one Brand Alignment
+ * Dark-mode-first. Orange is the action color.
+ * Font: Inter (matching cargo.one's clean geometric feel)
+ */
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 200 15% 12%;
+    /* Dark mode is the only mode */
+    --background: 240 33% 5%;        /* #0B0B14 deep space */
+    --foreground: 240 14% 95%;       /* #F0F0F5 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 200 15% 12%;
+    --card: 240 29% 9%;              /* #121220 */
+    --card-foreground: 240 14% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 12%;
+    --popover: 240 24% 13%;          /* #1A1A2E */
+    --popover-foreground: 240 14% 95%;
 
-    --primary: 186 75% 45%;
+    --primary: 22 88% 55%;           /* #F27A2E cargo.one orange */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 10% 96%;
-    --secondary-foreground: 200 15% 12%;
+    --secondary: 240 22% 14%;        /* #1C1C30 */
+    --secondary-foreground: 240 14% 95%;
 
-    --muted: 200 10% 96%;
-    --muted-foreground: 200 8% 45%;
+    --muted: 240 20% 12%;            /* #181828 */
+    --muted-foreground: 244 10% 58%; /* #8A8AA0 */
 
-    --accent: 16 85% 60%;
+    --accent: 22 88% 55%;            /* #F27A2E */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 240 14% 95%;
 
-    --border: 200 15% 88%;
-    --input: 200 15% 88%;
-    --ring: 186 75% 45%;
+    --border: 240 18% 18%;           /* #262640 */
+    --input: 240 29% 9%;             /* matches card */
+    --ring: 22 88% 55%;              /* orange focus ring */
 
-    --radius: 0.75rem;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(186 75% 45%) 0%, hsl(186 75% 55%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(16 85% 60%) 0%, hsl(16 85% 70%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(200 20% 98%) 100%);
-    
-    --shadow-soft: 0 2px 8px -2px hsl(200 15% 12% / 0.08);
-    --shadow-medium: 0 4px 16px -4px hsl(200 15% 12% / 0.12);
-    --shadow-card: 0 1px 3px hsl(200 15% 12% / 0.1), 0 1px 2px hsl(200 15% 12% / 0.06);
-    
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --gradient-primary: linear-gradient(135deg, #F27A2E 0%, #E06A1E 100%);
+    --gradient-accent: linear-gradient(135deg, #F27A2E 0%, #F59E0B 100%);
+    --gradient-subtle: #0B0B14;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
 
-    --sidebar-primary: 240 5.9% 10%;
+    --transition-smooth: all 0.15s ease-out;
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 200 20% 8%;
-    --foreground: 200 10% 95%;
-
-    --card: 200 20% 10%;
-    --card-foreground: 200 10% 95%;
-
-    --popover: 200 20% 10%;
-    --popover-foreground: 200 10% 95%;
-
-    --primary: 186 75% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 200 15% 15%;
-    --secondary-foreground: 200 10% 95%;
-
-    --muted: 200 15% 15%;
-    --muted-foreground: 200 8% 60%;
-
-    --accent: 16 85% 55%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 75% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 200 15% 20%;
-    --input: 200 15% 20%;
-    --ring: 186 75% 50%;
-    
-    --gradient-primary: linear-gradient(135deg, hsl(186 75% 40%) 0%, hsl(186 75% 50%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(16 85% 50%) 0%, hsl(16 85% 60%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(200 20% 10%) 0%, hsl(200 20% 8%) 100%);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 240 33% 5%;
+    --sidebar-foreground: 240 14% 95%;
+    --sidebar-primary: 22 88% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 22% 14%;
+    --sidebar-accent-foreground: 240 14% 95%;
+    --sidebar-border: 240 18% 18%;
+    --sidebar-ring: 22 88% 55%;
   }
 }
 
@@ -113,7 +69,28 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Dark scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(240 33% 5%);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(240 18% 22%);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(240 18% 28%);
   }
 }

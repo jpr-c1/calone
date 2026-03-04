@@ -236,27 +236,30 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-subtle">
+      <div className="min-h-screen bg-background">
         <UserHeader currentUser={currentUser} onLogout={onLogout} />
         <main className="container mx-auto px-6 py-8 max-w-7xl flex items-center justify-center">
-          <p className="text-muted-foreground">Loading content...</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading content...</p>
+          </div>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-background">
       <UserHeader currentUser={currentUser} onLogout={onLogout} />
-      
-      <main className="container mx-auto px-6 py-8 max-w-7xl">
-        <div className="flex justify-between items-center mb-8">
+
+      <main className="container mx-auto px-6 py-6 max-w-7xl">
+        <div className="flex justify-between items-end mb-6">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Content Calendar</h2>
-            <p className="text-muted-foreground">Manage your marketing content schedule</p>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">Content Calendar</h2>
+            <p className="text-sm text-muted-foreground mt-1">Manage your marketing content schedule</p>
           </div>
-          <AddContentDialog 
-            users={users} 
+          <AddContentDialog
+            users={users}
             campaigns={campaigns}
             onAddContent={handleAddContent}
             onAddCampaign={loadCampaigns}

@@ -98,28 +98,33 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
     setSelectedDate(null);
   };
 
+  const isToday = (day: Date) => {
+    const today = new Date();
+    return day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
+  };
+
   return (
     <>
-      <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+      <div className="bg-card border border-border/60 rounded-lg overflow-hidden">
         {/* Calendar Header */}
-        <div className="bg-gradient-subtle border-b border-border px-6 py-4 flex items-center justify-between">
-          <h3 className="text-2xl font-bold text-foreground">
+        <div className="border-b border-border/60 px-5 py-3 flex items-center justify-between bg-secondary/30">
+          <h3 className="text-xl font-semibold text-foreground tracking-tight">
             {format(currentMonth, "MMMM yyyy")}
           </h3>
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={handlePreviousMonth}
-              className="hover:bg-primary/10 hover:border-primary"
+              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={handleNextMonth}
-              className="hover:bg-primary/10 hover:border-primary"
+              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -127,11 +132,11 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
         </div>
 
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 border-b border-border bg-secondary/50">
+        <div className="grid grid-cols-7 border-b border-border/60 bg-muted/30">
           {weekdays.map(day => (
             <div
               key={day}
-              className="px-2 py-3 text-center text-sm font-semibold text-muted-foreground border-r border-border last:border-r-0"
+              className="px-2 py-2 text-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider border-r border-border/40 last:border-r-0"
             >
               {day}
             </div>
@@ -143,23 +148,30 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
           {days.map((day, index) => {
             const dayContent = getContentForDay(day);
             const isOtherMonth = !isCurrentMonth(day);
-            
+            const todayHighlight = isToday(day);
+
             return (
               <div
                 key={day.toISOString()}
                 onClick={(e) => handleCellClick(day, e)}
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(day)}
-                className={`min-h-[120px] border-r border-b border-border last:border-r-0 p-2 cursor-pointer hover:bg-accent/5 transition-colors ${
-                  isOtherMonth ? 'bg-muted/30' : 'bg-card'
+                className={`min-h-[110px] border-r border-b border-border/40 last:border-r-0 p-1.5 cursor-pointer transition-colors duration-100 ${
+                  isOtherMonth ? 'bg-background/60' : 'bg-card hover:bg-secondary/20'
                 } ${index >= days.length - 7 ? 'border-b-0' : ''}`}
               >
-                <div className={`text-sm font-medium mb-2 ${
-                  isOtherMonth ? 'text-muted-foreground/50' : 'text-foreground'
+                <div className={`text-[11px] font-medium mb-1 flex items-center ${
+                  isOtherMonth ? 'text-muted-foreground/40' : todayHighlight ? 'text-primary font-bold' : 'text-muted-foreground'
                 }`}>
-                  {format(day, "d")}
+                  {todayHighlight ? (
+                    <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">
+                      {format(day, "d")}
+                    </span>
+                  ) : (
+                    format(day, "d")
+                  )}
                 </div>
-                <div className="space-y-1 max-h-[80px] overflow-y-auto">
+                <div className="space-y-0.5 max-h-[80px] overflow-y-auto">
                   {dayContent.map(content => (
                     <ContentCard
                       key={content.id}
