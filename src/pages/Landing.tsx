@@ -8,13 +8,13 @@ interface LandingProps {
 
 const Landing = ({ users, onSelectUser }: LandingProps) => {
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-5xl">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            cal.one
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold mb-3 text-foreground tracking-tight">
+            cal<span className="text-primary">.one</span>
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Select your profile to continue
           </p>
         </div>

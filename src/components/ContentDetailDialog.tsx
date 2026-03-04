@@ -132,13 +132,13 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
   return (
     <>
       <Dialog open={open} onOpenChange={onClose} modal={false}>
-        <DialogContent 
-          className="sm:max-w-[600px] bg-card border-border"
+        <DialogContent
+          className="sm:max-w-[600px] bg-card border-border/60"
           onInteractOutside={(e) => e.preventDefault()}
           onPointerDownOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-card-foreground pr-8">
+            <DialogTitle className="text-xl font-semibold text-foreground pr-8">
               {isEditing ? "Edit Content" : content.title}
             </DialogTitle>
           </DialogHeader>
@@ -325,7 +325,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                 <Button
                   type="button"
                   onClick={handleSaveEdit}
-                  className="flex-1 bg-gradient-primary hover:opacity-90"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Save Changes
                 </Button>
@@ -369,7 +369,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                 <div className="flex items-center gap-3">
                   {ownerData && (
                     <>
-                      <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground shadow-soft">
+                      <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center text-sm font-semibold text-primary">
                         {ownerData.initials}
                       </div>
                       <div>
@@ -386,7 +386,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                   <label className="text-sm font-medium text-muted-foreground block mb-2">
                     Campaign
                   </label>
-                  <Badge className="bg-accent/50 text-accent-foreground border border-accent/30 hover:bg-accent/60">
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20">
                     {content.campaign.name}
                   </Badge>
                 </div>
