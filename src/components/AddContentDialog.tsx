@@ -89,75 +89,22 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
     setIsCreating(true);
 
     try {
-      // Get current session to access Google OAuth token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      let docUrl = null;
-
-      // Get owner name
-      const owner = users.find(u => u.id === ownerId);
-      const ownerName = owner?.name || "Unknown";
-
-      // Try to get refresh token from user record if provider_token is missing
-      let refreshToken = null;
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('google_refresh_token')
-          .eq('google_id', session.user.id)
-          .single();
-        refreshToken = userData?.google_refresh_token;
-      }
-
-      // Create Google Doc
-      try {
-        console.log('Calling create-google-doc edge function');
-        const response = await fetch(`https://ryqoqrxtxucgshdbkvvo.supabase.co/functions/v1/create-google-doc`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            channel,
-            ownerName,
-            publishDate: format(publishDate, "MMMM d, yyyy"),
-            accessToken: session?.provider_token || null,
-            refreshToken,
-            campaignName: campaignId ? campaigns.find(c => c.id === campaignId)?.name : null,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          docUrl = data.docUrl;
-          toast.success("Content and Google Doc created successfully!");
-        } else if (response.status === 401) {
-          toast.warning("Google session expired. Please log out and log back in to create Google Docs.");
-        } else {
-          const errorText = await response.text().catch(() => "");
-          console.error('Failed to create Google Doc:', response.status, errorText);
-          toast.warning("Content created, but Google Doc creation failed.");
-        }
-      } catch (docError) {
-        console.error('Error creating Google Doc:', docError);
-        toast.warning("Content created, but Google Doc creation failed.");
-      }
-
       const newContent = {
         title,
         description,
         channel,
         owner_id: ownerId,
         publish_date: format(publishDate, "yyyy-MM-dd"),
-        doc_url: docUrl,
         campaign_id: campaignId || undefined,
       };
 
       onAddContent(newContent);
-      
+
+      // Copy formatted prompt to clipboard
+      const clipboardText = `I'm writing ${title} for ${channel}. Here's a short description to help you get started: "${description}"`;
+      await navigator.clipboard.writeText(clipboardText);
+      toast.success("Content created & prompt copied to clipboard!");
+
       // Reset form
       setTitle("");
       setDescription("");
