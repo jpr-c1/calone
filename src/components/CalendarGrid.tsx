@@ -75,7 +75,21 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
       return;
     }
     setSelectedDate(day);
-    setAddDialogOpen(true);
+    if (copyingContent) {
+      // Open add dialog pre-filled with copied content data
+      setAddDialogOpen(true);
+    } else {
+      setAddDialogOpen(true);
+    }
+  };
+
+  const handleCopyContent = (content: ContentItem) => {
+    setCopyingContent(content);
+    toast.info("Click a date on the calendar to place the copy");
+  };
+
+  const handleCancelCopy = () => {
+    setCopyingContent(null);
   };
 
   const handleDragStart = (contentId: string) => {
@@ -98,6 +112,7 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
     onAddContent(content);
     setAddDialogOpen(false);
     setSelectedDate(null);
+    setCopyingContent(null);
   };
 
   return (
