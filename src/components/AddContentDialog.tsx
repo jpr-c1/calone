@@ -115,11 +115,7 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
       };
 
       onAddContent(newContent);
-
-      // Copy formatted prompt to clipboard
-      const clipboardText = `I'm writing ${title} for ${channel}. Here's a short description to help you get started: "${description}"`;
-      await navigator.clipboard.writeText(clipboardText);
-      toast.success("Content created & prompt copied to clipboard!");
+      toast.success("Content created!");
 
       // Reset form
       setTitle("");
