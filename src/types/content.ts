@@ -11,6 +11,7 @@ export interface Campaign {
   id: string;
   name: string;
   created_at: string;
+  archived: boolean;
 }
 
 export interface ContentItem {
