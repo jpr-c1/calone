@@ -394,9 +394,6 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
               )}
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground block mb-2">
-                  Brief Prompt
-                </label>
                 <Button
                   variant="outline"
                   onClick={async () => {
@@ -407,7 +404,7 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                   className="hover:bg-primary/10 hover:border-primary"
                 >
                   <Clipboard className="h-4 w-4 mr-2" />
-                  Copy Brief to Clipboard
+                  Copy Prompt
                 </Button>
               </div>
 
