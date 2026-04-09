@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Edit, Trash2, ExternalLink, Plus, Copy } from "lucide-react";
+import { CalendarIcon, Edit, Trash2, ExternalLink, Plus, Copy, Clipboard } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -392,6 +392,24 @@ export const ContentDetailDialog = ({ content, open, onClose, users, campaigns, 
                   </Badge>
                 </div>
               )}
+
+              <div>
+                <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  Brief Prompt
+                </label>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const text = `I'm writing ${content.title} for ${content.channel}. Here's a short description to help you get started: "${content.description}"`;
+                    await navigator.clipboard.writeText(text);
+                    toast.success("Copied to clipboard!");
+                  }}
+                  className="hover:bg-primary/10 hover:border-primary"
+                >
+                  <Clipboard className="h-4 w-4 mr-2" />
+                  Copy Brief to Clipboard
+                </Button>
+              </div>
 
               {content.doc_url && (
                 <div>
