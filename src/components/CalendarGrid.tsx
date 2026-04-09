@@ -4,7 +4,7 @@ import { ContentCard } from "@/components/ContentCard";
 import { ContentDetailDialog } from "@/components/ContentDetailDialog";
 import { AddContentDialog } from "@/components/AddContentDialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -16,6 +16,7 @@ import {
   startOfWeek,
   endOfWeek
 } from "date-fns";
+import { toast } from "sonner";
 
 interface CalendarGridProps {
   contentItems: ContentItem[];
@@ -35,6 +36,7 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [draggedContent, setDraggedContent] = useState<string | null>(null);
+  const [copyingContent, setCopyingContent] = useState<ContentItem | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
