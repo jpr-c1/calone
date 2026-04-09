@@ -199,6 +199,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     });
   }, [contentItems, searchQuery, selectedChannel, selectedOwner, selectedCampaign]);
 
+  const activeCampaigns = useMemo(() => campaigns.filter(c => !c.archived), [campaigns]);
+
   const handleRescheduleContent = async (id: string, newDate: string) => {
     try {
       const { data, error } = await supabase
@@ -246,7 +248,6 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     );
   }
 
-  const activeCampaigns = useMemo(() => campaigns.filter(c => !c.archived), [campaigns]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
