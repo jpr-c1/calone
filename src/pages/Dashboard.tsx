@@ -246,6 +246,8 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
     );
   }
 
+  const activeCampaigns = useMemo(() => campaigns.filter(c => !c.archived), [campaigns]);
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <UserHeader currentUser={currentUser} onLogout={onLogout} />
@@ -256,17 +258,20 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
             <h2 className="text-3xl font-bold text-foreground mb-2">Content Calendar</h2>
             <p className="text-muted-foreground">Manage your marketing content schedule</p>
           </div>
-          <AddContentDialog 
-            users={users} 
-            campaigns={campaigns}
-            onAddContent={handleAddContent}
-            onAddCampaign={loadCampaigns}
-          />
+          <div className="flex items-center gap-3">
+            <CampaignManagerDialog campaigns={campaigns} onUpdate={loadCampaigns} />
+            <AddContentDialog 
+              users={users} 
+              campaigns={activeCampaigns}
+              onAddContent={handleAddContent}
+              onAddCampaign={loadCampaigns}
+            />
+          </div>
         </div>
 
         <FilterBar
           users={users}
-          campaigns={campaigns}
+          campaigns={activeCampaigns}
           selectedChannel={selectedChannel}
           selectedOwner={selectedOwner}
           selectedCampaign={selectedCampaign}
@@ -281,7 +286,7 @@ const Dashboard = ({ currentUser, users, onLogout }: DashboardProps) => {
         <CalendarGrid 
           contentItems={filteredContentItems}
           users={users}
-          campaigns={campaigns}
+          campaigns={activeCampaigns}
           onEditContent={handleEditContent}
           onDeleteContent={handleDeleteContent}
           onRescheduleContent={handleRescheduleContent}
