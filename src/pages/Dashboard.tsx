@@ -5,6 +5,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { AddContentDialog } from "@/components/AddContentDialog";
 import { CalendarGrid } from "@/components/CalendarGrid";
 import { FilterBar } from "@/components/FilterBar";
+import { CampaignManagerDialog } from "@/components/CampaignManagerDialog";
 import { toast } from "sonner";
 
 interface DashboardProps {
