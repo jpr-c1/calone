@@ -16,16 +16,19 @@ export type Database = {
     Tables: {
       campaigns: {
         Row: {
+          archived: boolean
           created_at: string
           id: string
           name: string
         }
         Insert: {
+          archived?: boolean
           created_at?: string
           id?: string
           name: string
         }
         Update: {
+          archived?: boolean
           created_at?: string
           id?: string
           name?: string
