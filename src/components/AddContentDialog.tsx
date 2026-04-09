@@ -14,6 +14,14 @@ import { CHANNELS, TeamMember, Campaign } from "@/types/content";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
+interface InitialContentData {
+  title: string;
+  description: string;
+  channel: string;
+  owner_id: string;
+  campaign_id?: string;
+}
+
 interface AddContentDialogProps {
   users: TeamMember[];
   campaigns: Campaign[];
@@ -22,9 +30,10 @@ interface AddContentDialogProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   initialDate?: Date | null;
+  initialData?: InitialContentData | null;
 }
 
-export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign, open: controlledOpen, onOpenChange, initialDate }: AddContentDialogProps) => {
+export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign, open: controlledOpen, onOpenChange, initialDate, initialData }: AddContentDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -38,12 +47,19 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
-  // Set initial date when dialog opens
+  // Set initial date and data when dialog opens
   useEffect(() => {
     if (open && initialDate) {
       setPublishDate(initialDate);
     }
-  }, [open, initialDate]);
+    if (open && initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setChannel(initialData.channel);
+      setOwnerId(initialData.owner_id);
+      setCampaignId(initialData.campaign_id || "");
+    }
+  }, [open, initialDate, initialData]);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleAddNewCampaign = async () => {

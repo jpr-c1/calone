@@ -4,7 +4,7 @@ import { ContentCard } from "@/components/ContentCard";
 import { ContentDetailDialog } from "@/components/ContentDetailDialog";
 import { AddContentDialog } from "@/components/AddContentDialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { 
   startOfMonth, 
   endOfMonth, 
@@ -16,6 +16,7 @@ import {
   startOfWeek,
   endOfWeek
 } from "date-fns";
+import { toast } from "sonner";
 
 interface CalendarGridProps {
   contentItems: ContentItem[];
@@ -35,6 +36,7 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [draggedContent, setDraggedContent] = useState<string | null>(null);
+  const [copyingContent, setCopyingContent] = useState<ContentItem | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -73,7 +75,21 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
       return;
     }
     setSelectedDate(day);
-    setAddDialogOpen(true);
+    if (copyingContent) {
+      // Open add dialog pre-filled with copied content data
+      setAddDialogOpen(true);
+    } else {
+      setAddDialogOpen(true);
+    }
+  };
+
+  const handleCopyContent = (content: ContentItem) => {
+    setCopyingContent(content);
+    toast.info("Click a date on the calendar to place the copy");
+  };
+
+  const handleCancelCopy = () => {
+    setCopyingContent(null);
   };
 
   const handleDragStart = (contentId: string) => {
@@ -96,10 +112,24 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
     onAddContent(content);
     setAddDialogOpen(false);
     setSelectedDate(null);
+    setCopyingContent(null);
   };
 
   return (
     <>
+      {/* Copy mode banner */}
+      {copyingContent && (
+        <div className="mb-4 flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+          <p className="text-sm font-medium text-foreground">
+            Copying "<span className="font-semibold">{copyingContent.title}</span>" — click a date to place it
+          </p>
+          <Button variant="ghost" size="sm" onClick={handleCancelCopy} className="hover:bg-primary/10">
+            <X className="h-4 w-4 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      )}
+
       <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
         {/* Calendar Header */}
         <div className="bg-gradient-subtle border-b border-border px-6 py-4 flex items-center justify-between">
@@ -152,7 +182,7 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
                 onDrop={() => handleDrop(day)}
                 className={`min-h-[120px] border-r border-b border-border last:border-r-0 p-2 cursor-pointer hover:bg-accent/5 transition-colors ${
                   isOtherMonth ? 'bg-muted/30' : 'bg-card'
-                } ${index >= days.length - 7 ? 'border-b-0' : ''}`}
+                } ${index >= days.length - 7 ? 'border-b-0' : ''} ${copyingContent ? 'ring-inset hover:ring-2 hover:ring-primary/30' : ''}`}
               >
                 <div className={`text-sm font-medium mb-2 ${
                   isOtherMonth ? 'text-muted-foreground/50' : 'text-foreground'
@@ -184,6 +214,7 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
         onEdit={onEditContent}
         onDelete={onDeleteContent}
         onAddCampaign={onAddCampaign}
+        onCopy={handleCopyContent}
       />
 
       <AddContentDialog 
@@ -192,8 +223,18 @@ export const CalendarGrid = ({ contentItems, users, campaigns, onEditContent, on
         onAddContent={handleAddContentSubmit}
         onAddCampaign={onAddCampaign}
         open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
+        onOpenChange={(open) => {
+          setAddDialogOpen(open);
+          if (!open) setCopyingContent(null);
+        }}
         initialDate={selectedDate}
+        initialData={copyingContent ? {
+          title: copyingContent.title,
+          description: copyingContent.description,
+          channel: copyingContent.channel,
+          owner_id: copyingContent.owner_id,
+          campaign_id: copyingContent.campaign_id,
+        } : null}
       />
     </>
   );
