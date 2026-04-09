@@ -47,12 +47,19 @@ export const AddContentDialog = ({ users, campaigns, onAddContent, onAddCampaign
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
-  // Set initial date when dialog opens
+  // Set initial date and data when dialog opens
   useEffect(() => {
     if (open && initialDate) {
       setPublishDate(initialDate);
     }
-  }, [open, initialDate]);
+    if (open && initialData) {
+      setTitle(initialData.title);
+      setDescription(initialData.description);
+      setChannel(initialData.channel);
+      setOwnerId(initialData.owner_id);
+      setCampaignId(initialData.campaign_id || "");
+    }
+  }, [open, initialDate, initialData]);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleAddNewCampaign = async () => {
